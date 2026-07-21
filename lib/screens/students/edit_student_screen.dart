@@ -1,204 +1,188 @@
 import 'package:flutter/material.dart';
 
-import '../../models/student_model.dart';
-import '../../services/hive_service.dart';
-
-
+import 'package:debora/models/student_model.dart';
+import 'package:debora/services/hive_service.dart';
+import 'package:debora/widgets/app_button.dart';
+import 'package:debora/widgets/app_snackbar.dart';
+import 'package:debora/widgets/custom_app_bar.dart';
+import 'package:debora/widgets/custom_text_field.dart';
 class EditStudentScreen extends StatefulWidget {
-
   final StudentModel student;
-  final int index;
-
 
   const EditStudentScreen({
     super.key,
     required this.student,
-    required this.index,
   });
 
-
   @override
-  State<EditStudentScreen> createState() =>
-      _EditStudentScreenState();
-
+  State<EditStudentScreen> createState() => _EditStudentScreenState();
 }
 
-
-
 class _EditStudentScreenState extends State<EditStudentScreen> {
-
+  final _formKey = GlobalKey<FormState>();
 
   late TextEditingController nameController;
   late TextEditingController fatherController;
   late TextEditingController classController;
   late TextEditingController phoneController;
 
-
-
   @override
   void initState() {
-
     super.initState();
 
+    nameController = TextEditingController(
+      text: widget.student.name,
+    );
 
-    nameController =
-        TextEditingController(text: widget.student.name);
+    fatherController = TextEditingController(
+      text: widget.student.fatherName,
+    );
 
-    fatherController =
-        TextEditingController(text: widget.student.fatherName);
+    classController = TextEditingController(
+      text: widget.student.studentClass,
+    );
 
-    classController =
-        TextEditingController(text: widget.student.studentClass);
-
-    phoneController =
-        TextEditingController(text: widget.student.phone);
-
+    phoneController = TextEditingController(
+      text: widget.student.phone,
+    );
   }
-
-
 
   @override
   void dispose() {
-
     nameController.dispose();
     fatherController.dispose();
     classController.dispose();
     phoneController.dispose();
-
     super.dispose();
-
   }
+  Future<void> updateStudent() async {
+    if (_formKey.currentState!.validate()) {
+      widget.student.name = nameController.text;
+      widget.student.fatherName = fatherController.text;
+      widget.student.studentClass = classController.text;
+      widget.student.phone = phoneController.text;
 
+      await HiveService.updateStudent(widget.student);
 
+      if (!mounted) return;
 
-  void updateStudent() {
-
-
-    final updatedStudent = StudentModel(
-
-      name: nameController.text,
-
-      fatherName: fatherController.text,
-
-      studentClass: classController.text,
-
-      phone: phoneController.text,
-
+   AppSnackBar.success(
+      context,
+      "Student updated successfully!",
     );
 
-
-    HiveService.updateStudent(
-      widget.index,
-      updatedStudent,
-    );
-
-
-    Navigator.pop(context);
-
-
+      Navigator.pop(context);
+    }
   }
-
-
-
 
   @override
   Widget build(BuildContext context) {
-
     return Scaffold(
+      backgroundColor: const Color(0xffF8FAFC),
 
-      appBar: AppBar(
-        title: const Text(
-          "Edit Student",
-        ),
-      ),
-
-
-      body: Padding(
-
-        padding: const EdgeInsets.all(16),
-
-
+    appBar: const CustomAppBar(
+      title: "Edit Student",
+    ),
+      body: Form(
+        key: _formKey,
         child: ListView(
-
+          padding: const EdgeInsets.all(20),
           children: [
-
-
-            TextField(
-
-              controller: nameController,
-
-              decoration: const InputDecoration(
-                labelText: "Student Name",
+            const CircleAvatar(
+              radius: 50,
+              backgroundColor: Color(0xffFACC15),
+              child: Icon(
+                Icons.edit,
+                size: 50,
+                color: Color(0xff015254),
               ),
-
             ),
 
+            const SizedBox(height: 20),
 
-            const SizedBox(height:16),
-
-
-            TextField(
-
-              controller: fatherController,
-
-              decoration: const InputDecoration(
-                labelText: "Father Name",
-              ),
-
-            ),
-
-
-            const SizedBox(height:16),
-
-
-            TextField(
-
-              controller: classController,
-
-              decoration: const InputDecoration(
-                labelText: "Class",
-              ),
-
-            ),
-
-
-            const SizedBox(height:16),
-
-
-            TextField(
-
-              controller: phoneController,
-
-              decoration: const InputDecoration(
-                labelText: "Phone Number",
-              ),
-
-            ),
-
-
-            const SizedBox(height:30),
-
-
-            ElevatedButton(
-
-              onPressed: updateStudent,
-
-
-              child: const Text(
+            const Center(
+              child: Text(
                 "Update Student",
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xff015254),
+                ),
               ),
-
             ),
 
+            const SizedBox(height: 30),
 
+            CustomTextField(
+              controller: nameController,
+              label: "Student Name",
+              icon: Icons.person,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Enter student name";
+                }
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 18),
+
+          CustomTextField(
+            controller: fatherController,
+            label: "Father's Name",
+            icon: Icons.family_restroom,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return "Enter father's name";
+              }
+              return null;
+            },
+          ),
+
+            const SizedBox(height: 18),
+
+           CustomTextField(
+            controller: classController,
+            label: "Class",
+            icon: Icons.class_,
+            validator: (value) {
+              if (value == null || value.trim().isEmpty) {
+                return "Enter class";
+              }
+              return null;
+            },
+            ),
+            const SizedBox(height: 18),
+
+           CustomTextField(
+              controller: phoneController,
+              label: "Phone Number",
+              icon: Icons.phone,
+              keyboardType: TextInputType.number,
+              numbersOnly: true,
+              validator: (value) {
+                if (value == null || value.isEmpty) {
+                  return "Enter phone number";
+                }
+
+                if (value.length < 10) {
+                  return "Phone number must be at least 10 digits";
+                }
+
+                return null;
+              },
+            ),
+
+            const SizedBox(height: 35),
+
+          AppButton(
+              text: "Update Student",
+              icon: Icons.save,
+              onPressed: updateStudent,
+            ),
           ],
-
         ),
-
       ),
-
     );
-
   }
-
 }

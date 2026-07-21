@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import 'package:debora/services/hive_service.dart';
 import 'students/students_screen.dart';
-
+import 'package:debora/widgets/custom_app_bar.dart';
+import 'package:debora/widgets/stats_card.dart';
 
 class DashboardScreen extends StatelessWidget {
 
@@ -10,18 +12,14 @@ class DashboardScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final totalStudents = HiveService.getStudents().length;
+    
 
     return Scaffold(
 
-      appBar: AppBar(
-
-        title: const Text(
-          "Debora School",
-        ),
-
-      ),
-
-
+  appBar: const CustomAppBar(
+    title: "Debora School",
+  ),
       body: Padding(
 
         padding: const EdgeInsets.all(16),
@@ -74,7 +72,27 @@ class DashboardScreen extends StatelessWidget {
 
 
             const SizedBox(height: 25),
+            Row(
+              children: [
+                Expanded(
+                  child:StatsCard(
+                    title: "Students",
+                    value: totalStudents.toString(),
+                    icon: Icons.school,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: StatsCard(
+                    title: "Teachers",
+                    value: "18",
+                    icon: Icons.badge,
+                  ),
+                ),
+              ],
+            ),
 
+            const SizedBox(height: 20),
 
 
 
@@ -146,7 +164,7 @@ class DashboardScreen extends StatelessWidget {
 
                     title: "Teachers",
 
-                    icon: Icons.person,
+                    icon: Icons.badge,
 
 
                     onTap: () {},
